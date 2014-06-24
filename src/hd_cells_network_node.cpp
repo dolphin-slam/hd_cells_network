@@ -79,8 +79,7 @@ void timerCallback(const ros::TimerEvent& event)
 int main(int argc, char **argv)
 {
 
-    ros::init(argc, argv, "milford_model");
-
+    ros::init(argc, argv, "hd_cells_network");
 
     network.initWeights(10*M_PI/180,GAUSSIAN);
     network.setGlobalInhibition(0.001);
