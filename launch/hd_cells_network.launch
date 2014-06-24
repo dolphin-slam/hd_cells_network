@@ -1,0 +1,9 @@
+<launch>
+
+    <node name="network" pkg="hd_cells_network" type="hd_cells_network_node" required="true"/>
+
+    <!-- Visualization tools -->
+
+    <node name="rviz_network" pkg="rviz" type="rviz" args="-d $(find hd_cells_network)/config/hd_cells_newtork.rviz" respawn="false"/>
+
+</launch>
