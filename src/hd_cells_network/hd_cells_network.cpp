@@ -1,7 +1,12 @@
 #include "hd_cells_network/hd_cells_network.h"
+#include <angles/angles.h>
+#include <boost/foreach.hpp>
+#include <algorithm>
 
 namespace hd_cells
 {
+
+
 
 HDCellsNetwork::HDCellsNetwork(int number_of_neurons)   {
 
@@ -9,6 +14,30 @@ HDCellsNetwork::HDCellsNetwork(int number_of_neurons)   {
     step_ = 2*M_PI/number_of_neurons_;
 
     neurons_.create(number_of_neurons_,1);
+
+    std::fill(neurons_.begin(),neurons_.end(),0.0);
+
+}
+
+bool HDCellsNetwork::applyExternalInput(double angle, double std_dev)
+{
+    cv::Mat_< double> input(neurons_.size());
+
+    double variation_x2 = 2*pow(std_dev,2);
+
+    for(int i=0;i < number_of_neurons_ ;i++)
+    {
+        input[i][0] = exp(-pow(angles::shortest_angular_distance(i*step_,angle),2)/ variation_x2);
+    }
+
+    applyExternalInput(input);
+}
+
+bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
+{
+    last_input_ = input;
+
+    neurons_ += input;
 }
 
 bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normalize)
@@ -69,12 +98,17 @@ bool HDCellsNetwork::excite()
     neurons_ = new_neurons;
 }
 
-bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
+bool HDCellsNetwork::inhibit()
 {
 
-    neurons_ += input;
+    BOOST_FOREACH(double &neuron, neurons_)
+    {
+        neuron = std::max(neuron - global_inhibition_,0.0);
+    }
 
 }
+
+
 
 bool HDCellsNetwork::pathIntegrate(double delta_angle)
 {
@@ -91,9 +125,18 @@ bool HDCellsNetwork::setGlobalInhibition(double inhi)
     global_inhibition_ = inhi;
 }
 
+
+
 void HDCellsNetwork::getActivity(std::vector<double> &act)
 {
     neurons_.copyTo(act);
+}
+
+void HDCellsNetwork::getLastInput(std::vector<double> &input)
+{
+    last_input_.copyTo(input);  //! analisar a possibilidade de retornar apenas um ponteiro constante para a matriz.
+    //! LER    void convertTo( OutputArray m, int rtype, double alpha=1, double beta=0 ) const;
+
 }
 
 }
