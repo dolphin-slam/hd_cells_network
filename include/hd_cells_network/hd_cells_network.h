@@ -1,5 +1,5 @@
-#ifndef MILFORD_HDCELLS_MODEL_H
-#define MILFORD_HDCELLS_MODEL_H
+#ifndef HDCELLS_NETWORK_H
+#define HDCELLS_NETWORK_H
 
 
 #include <opencv/cv.h>
@@ -35,4 +35,4 @@ public:
 
 
 }
-#endif // MILFORD_HDCELLS_MODEL_H
+#endif // HDCELLS_NETWORK_H
