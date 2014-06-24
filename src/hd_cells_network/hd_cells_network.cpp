@@ -8,7 +8,7 @@ HDCellsNetwork::HDCellsNetwork(int number_of_neurons)   {
     number_of_neurons_ = number_of_neurons;
     step_ = 2*M_PI/number_of_neurons_;
 
-    neurons.create(number_of_neurons_,1);
+    neurons_.create(number_of_neurons_,1);
 }
 
 bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normalize)
@@ -66,13 +66,13 @@ bool HDCellsNetwork::excite()
         }
     }
 
-    neurons = new_neurons;
+    neurons_ = new_neurons;
 }
 
 bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
 {
 
-    neurons += input;
+    neurons_ += input;
 
 }
 
@@ -89,6 +89,11 @@ bool HDCellsNetwork::pathIntegrate(double delta_angle)
 bool HDCellsNetwork::setGlobalInhibition(double inhi)
 {
     global_inhibition_ = inhi;
+}
+
+void HDCellsNetwork::getActivity(std::vector<double> &act)
+{
+    neurons_.copyTo(act);
 }
 
 }

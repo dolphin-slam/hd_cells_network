@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   time_monitor
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
