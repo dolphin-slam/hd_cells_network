@@ -26,8 +26,11 @@ public:
     bool applyExternalInput(double angle, double std_dev);
     bool pathIntegrate(double delta_angle);
     bool setGlobalInhibition(double inhi);
+    bool normalizeNeurons();
+
     void getActivity(std::vector<double> &act);
     void getLastInput(std::vector<double> &input);
+
 
     cv::Mat_<double> neurons_;
     cv::Mat_<double> last_input_;

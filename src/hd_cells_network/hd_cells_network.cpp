@@ -66,10 +66,10 @@ bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normali
     {
         for(int i=0;i<number_of_neurons_;i++)
         {
-            for(int j=0;j<number_of_neurons_;j++)
+            for(int j=i;j<number_of_neurons_;j++)
             {
                 distance = (i-j)*step_;
-                recurrent_weights = ( 1 - pow(distance,2)/pow(sigma,2) )*exp( -pow(distance,2)/( 2*pow(sigma,2) ) );
+                recurrent_weights[i][j] = recurrent_weights[j][i] = ( 1 - pow(distance,2)/pow(sigma,2) )*exp( -pow(distance,2)/( 2*pow(sigma,2) ) );
             }
         }
 
@@ -79,6 +79,8 @@ bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normali
         }
     }
 
+    std::cout << "Recurrent weights = " << recurrent_weights.row(number_of_neurons_/2);
+
 }
 
 bool HDCellsNetwork::excite()
@@ -86,16 +88,21 @@ bool HDCellsNetwork::excite()
     cv::Mat_<double> new_neurons(number_of_neurons_,1);
     std::fill(new_neurons.begin(),new_neurons.end(),0.0);
 
-    //! Neuron i excite every neuron with the associated weight
+    //! Neuron i receive energy from  every neuron with the associated weight
     for(int i=0;i<number_of_neurons_;i++)
     {
         for(int j=0;j<number_of_neurons_;j++)
         {
-            new_neurons[j][0] = new_neurons[i][0]*recurrent_weights[i][j];
+            new_neurons[i][0] += neurons_[j][0]*recurrent_weights[j][i];
         }
     }
 
-    neurons_ = new_neurons;
+    //neurons_ = new_neurons;
+    for(int i=0;i<number_of_neurons_;i++)
+    {
+        neurons_[i][0] = std::max(new_neurons[i][0] - neurons_[i][0],0.0);
+    }
+
 }
 
 bool HDCellsNetwork::inhibit()
@@ -123,6 +130,22 @@ bool HDCellsNetwork::pathIntegrate(double delta_angle)
 bool HDCellsNetwork::setGlobalInhibition(double inhi)
 {
     global_inhibition_ = inhi;
+}
+
+bool HDCellsNetwork::normalizeNeurons()
+{
+
+//    double total = 0;
+//    BOOST_FOREACH(double neuron,neurons_)
+//    {
+//        total += neuron;
+//    }
+//    neurons_ /= total;
+
+    double max = *std::max_element(neurons_.begin(),neurons_.end());
+    neurons_ /= max;
+
+
 }
 
 

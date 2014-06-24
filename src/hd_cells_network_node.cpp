@@ -6,15 +6,20 @@
 #include <tf/tf.h>
 #include <angles/angles.h>
 #include <iostream>
+#include <boost/foreach.hpp>
+
 
 using std::cout;
 using std::endl;
+
+
 
 using namespace hd_cells;
 
 const double MARKER_SCALE = 0.1;
 const int NUMBER_OF_NEURONS = 100;
 const double STD_IMU = angles::from_degrees(10);
+
 
 HDCellsNetwork network(NUMBER_OF_NEURONS);
 
@@ -28,6 +33,12 @@ void publishNetworkActivity()
     visualization_msgs::Marker message;
 
     network.getActivity(activity);
+
+    cout << "Network Activity = " << endl;
+    BOOST_FOREACH (double a, activity) {
+        cout << a << " ";
+    }
+    cout << endl;
 
     //! completa o cabeçalho da mensagem
     message.header.stamp = ros::Time::now();
@@ -138,23 +149,38 @@ void imuCallback(const sensor_msgs::ImuConstPtr &message)
     network.getLastInput(input);
     publishNetworkInput(input);
 
+
 }
 
 void timerCallback(const ros::TimerEvent& event)
 {
 
-    float yaw = 100; //! Test input
+    static float yaw1 = 0, yaw2 = 180; //! Test input
+    static int count = 0;
 
+
+    float yaw = 0;
+
+    if(count < 20)
+        yaw = yaw1;
+    else
+        yaw = yaw2;
 
     network.excite();
+
     network.applyExternalInput(yaw,STD_IMU);
-    network.inhibit();
+    //network.inhibit();
+    network.normalizeNeurons();
 
     publishNetworkActivity();
 
     std::vector <double> input;
     network.getLastInput(input);
     publishNetworkInput(input);
+
+
+    count ++;
+
 
 }
 
@@ -164,7 +190,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "hd_cells_network");
 
     network.initWeights(angles::from_degrees(10),GAUSSIAN);
-    network.setGlobalInhibition(0.001);
+    network.setGlobalInhibition(0.09);
 
     //! ROS Node Handle
     ros::NodeHandle node_handle_;

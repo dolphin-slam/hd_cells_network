@@ -82,7 +82,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.005
+      Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
@@ -91,7 +91,7 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 25.0736
+      Scale: 43.6349
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
       X: 0
@@ -113,5 +113,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 53
+  X: 43
   Y: 14
