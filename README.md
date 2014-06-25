@@ -1,4 +1,6 @@
-hd_cells_network
+Head Direction Cells Network
 ================
 
-Computational model of Head Direction Cells
+This project aims to develop a Computational Model of Head Direction Cells.
+
+
