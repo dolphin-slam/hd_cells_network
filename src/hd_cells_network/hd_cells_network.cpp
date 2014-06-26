@@ -2,6 +2,7 @@
 #include <angles/angles.h>
 #include <boost/foreach.hpp>
 #include <algorithm>
+#include <fstream>
 
 namespace hd_cells
 {
@@ -16,7 +17,6 @@ HDCellsNetwork::HDCellsNetwork(int number_of_neurons)   {
     neurons_.create(number_of_neurons_,1);
 
     std::fill(neurons_.begin(),neurons_.end(),0.0);
-
 }
 
 bool HDCellsNetwork::applyExternalInput(double angle, double std_dev)
@@ -42,6 +42,8 @@ bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
 
 bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normalize)
 {
+    std::ofstream out("recurrent_weights.txt");
+
     double distance;
 
     recurrent_weights.create(number_of_neurons_,number_of_neurons_);
@@ -52,7 +54,7 @@ bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normali
         {
             for(int j=i;j<number_of_neurons_;j++)
             {
-                distance = (i-j)*step_;
+                distance = angles::shortest_angular_distance(i*step_,j*step_);
                 recurrent_weights[i][j] = recurrent_weights[j][i] = exp( -pow(distance,2)/( 2*pow(sigma,2) ) );
             }
         }
@@ -68,7 +70,7 @@ bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normali
         {
             for(int j=i;j<number_of_neurons_;j++)
             {
-                distance = (i-j)*step_;
+                distance = angles::shortest_angular_distance(i*step_,j*step_);
                 recurrent_weights[i][j] = recurrent_weights[j][i] = ( 1 - pow(distance,2)/pow(sigma,2) )*exp( -pow(distance,2)/( 2*pow(sigma,2) ) );
             }
         }
@@ -79,7 +81,16 @@ bool HDCellsNetwork::initWeights(double sigma, ExcitationType type, bool normali
         }
     }
 
-    std::cout << "Recurrent weights = " << recurrent_weights.row(number_of_neurons_/2);
+    for(int i=0;i<number_of_neurons_;i++)
+    {
+        for(int j=0;j<number_of_neurons_;j++)
+        {
+            out << recurrent_weights[i][j] << " ";
+        }
+        out << std::endl;
+    }
+
+    out.close();
 
 }
 

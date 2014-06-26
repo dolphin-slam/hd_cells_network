@@ -7,6 +7,7 @@
 #include <angles/angles.h>
 #include <iostream>
 #include <boost/foreach.hpp>
+#include <time_monitor/time_monitor.h>
 
 
 using std::cout;
@@ -159,6 +160,7 @@ void timerCallback(const ros::TimerEvent& event)
     static int count = 0;
 
 
+
     float yaw = 0;
 
     if(count < 20)
@@ -189,7 +191,7 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "hd_cells_network");
 
-    network.initWeights(angles::from_degrees(10),GAUSSIAN);
+    network.initWeights(angles::from_degrees(10),MEXICAN_HAT);
     network.setGlobalInhibition(0.09);
 
     //! ROS Node Handle
