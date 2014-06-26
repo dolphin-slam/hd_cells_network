@@ -159,6 +159,23 @@ bool HDCellsNetwork::normalizeNeurons()
 
 }
 
+bool HDCellsNetwork::normalizeTotalNeurons()
+{
+
+    double total = 0;
+    BOOST_FOREACH(double neuron,neurons_)
+    {
+        total += neuron;
+    }
+    neurons_ /= total;
+
+//    double max = *std::max_element(neurons_.begin(),neurons_.end());
+//    neurons_ /= max;
+
+
+}
+
+
 
 
 void HDCellsNetwork::getActivity(std::vector<double> &act)

@@ -27,6 +27,7 @@ public:
     bool pathIntegrate(double delta_angle);
     bool setGlobalInhibition(double inhi);
     bool normalizeNeurons();
+    bool normalizeTotalNeurons();
 
     void getActivity(std::vector<double> &act);
     void getLastInput(std::vector<double> &input);
