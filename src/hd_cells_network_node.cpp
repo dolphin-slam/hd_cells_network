@@ -23,6 +23,8 @@ const double MARKER_SCALE = 0.1;
 const int NUMBER_OF_NEURONS = 100;
 const double STD_IMU = angles::from_degrees(10);
 std::ofstream snapshot;
+RNG::RNG rng(0xFFFFFFFF);
+
 
 
 HDCellsNetwork network(NUMBER_OF_NEURONS);
@@ -180,7 +182,6 @@ void timerCallback(const ros::TimerEvent& event)
     network.excite();
 
     network.applyExternalInput(yaw,STD_IMU);
-    //network.inhibit();
     network.normalizeNeurons();
 
     publishNetworkActivity();
@@ -201,7 +202,6 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "hd_cells_network");
 
     network.initWeights(angles::from_degrees(10),MEXICAN_HAT);
-    network.setGlobalInhibition(0.25);
 
     //! ROS Node Handle
     ros::NodeHandle node_handle_;

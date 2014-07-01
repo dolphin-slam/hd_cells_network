@@ -33,6 +33,22 @@ bool HDCellsNetwork::applyExternalInput(double angle, double std_dev)
     applyExternalInput(input);
 }
 
+bool HDCellsNetwork::applyExternalInput(double angle)
+{
+    cv::Mat_< double> input(neurons_.size());
+
+    std::fill(input.begin(),input.end(),0.0);
+
+    double in,in1,in2;
+
+    in = static_cast<int>(angle / step_);
+
+    //!TODO Arrumar essa função
+
+
+    applyExternalInput(input);
+}
+
 bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
 {
     last_input_ = input;
