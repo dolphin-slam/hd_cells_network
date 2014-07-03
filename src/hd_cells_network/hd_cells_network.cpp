@@ -37,17 +37,14 @@ bool HDCellsNetwork::applyExternalInput(double angle)
 {
     cv::Mat_< double> input(neurons_.size());
 
-    std::fill(input.begin(),input.end(),0.0);
+    std::fill(neurons_.begin(), neurons_.end(),0.0);
 
-    double in,in1,in2;
-
-    in = static_cast<int>(angle / step_);
-
-    //!TODO Arrumar essa função
-
+    input[static_cast<int>(angle/step_)][0] = 1.0;
 
     applyExternalInput(input);
 }
+
+
 
 bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
 {
@@ -162,12 +159,12 @@ bool HDCellsNetwork::setGlobalInhibition(double inhi)
 bool HDCellsNetwork::normalizeNeurons()
 {
 
-//    double total = 0;
-//    BOOST_FOREACH(double neuron,neurons_)
-//    {
-//        total += neuron;
-//    }
-//    neurons_ /= total;
+    //    double total = 0;
+    //    BOOST_FOREACH(double neuron,neurons_)
+    //    {
+    //        total += neuron;
+    //    }
+    //    neurons_ /= total;
 
     double max = *std::max_element(neurons_.begin(),neurons_.end());
     neurons_ /= max;
@@ -185,8 +182,8 @@ bool HDCellsNetwork::normalizeTotalNeurons()
     }
     neurons_ /= total;
 
-//    double max = *std::max_element(neurons_.begin(),neurons_.end());
-//    neurons_ /= max;
+    //    double max = *std::max_element(neurons_.begin(),neurons_.end());
+    //    neurons_ /= max;
 
 
 }

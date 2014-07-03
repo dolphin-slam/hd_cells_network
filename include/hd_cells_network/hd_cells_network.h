@@ -23,8 +23,8 @@ public:
     bool excite();
     bool inhibit();
     bool applyExternalInput(cv::Mat_<double> input);
-    bool applyExternalInput(double angle);
     bool applyExternalInput(double angle, double std_dev);
+    bool applyExternalInput(double angle);
     bool pathIntegrate(double delta_angle);
     bool setGlobalInhibition(double inhi);
     bool normalizeNeurons();

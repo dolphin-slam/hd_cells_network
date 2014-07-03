@@ -162,9 +162,7 @@ void imuCallback(const sensor_msgs::ImuConstPtr &message)
 
 void timerCallback(const ros::TimerEvent& event)
 {
-
     static int count = 0;
-
 
     float yaw;
     network.excite();
@@ -172,14 +170,14 @@ void timerCallback(const ros::TimerEvent& event)
     if(count < 10)
     {
         yaw = angles::from_degrees(100);
-        network.applyExternalInput(yaw,STD_IMU);
+        yaw += rng.gaussian(STD_IMU);
+        network.applyExternalInput(yaw);
     }
     else if (count == 30)
     {
         ros::shutdown();
         return;
     }
-
 
     network.normalizeNeurons();
 
@@ -189,9 +187,7 @@ void timerCallback(const ros::TimerEvent& event)
     network.getLastInput(input);
     publishNetworkInput(input);
 
-
     count ++;
-
 
 }
 
