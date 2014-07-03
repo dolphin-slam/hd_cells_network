@@ -10,14 +10,13 @@
 #include <time_monitor/time_monitor.h>
 #include <fstream>
 
+
 #include <opencv/cv.h>
 
 
 using std::cout;
 using std::endl;
-
-
-
+using std::ofstream;
 
 using namespace hd_cells;
 
@@ -45,7 +44,7 @@ void publishNetworkActivity()
 
     snapshot << ros::Time::now() << " ";
     BOOST_FOREACH(double act, activity)
-        snapshot << act << " ";
+            snapshot << act << " ";
     snapshot << endl;
 
     //! completa o cabeçalho da mensagem
@@ -167,24 +166,21 @@ void timerCallback(const ros::TimerEvent& event)
     static int count = 0;
 
 
-    float yaw = 0;
+    float yaw;
+    network.excite();
 
     if(count < 10)
-        yaw = angles::from_degrees(0);
-    else if (count < 20)
+    {
         yaw = angles::from_degrees(100);
-    else if (count < 30)
-        yaw = angles::from_degrees(110);
-    else
+        network.applyExternalInput(yaw,STD_IMU);
+    }
+    else if (count == 30)
     {
         ros::shutdown();
         return;
     }
 
 
-    network.excite();
-
-    network.applyExternalInput(yaw,STD_IMU);
     network.normalizeNeurons();
 
     publishNetworkActivity();
@@ -198,6 +194,68 @@ void timerCallback(const ros::TimerEvent& event)
 
 
 }
+
+void testa_execution_time()
+{
+    TimeMonitor time_monitor;
+
+    HDCellsNetwork *network;
+
+    std::vector<int> sizes(20);
+
+    sizes[0] = 10;
+    for(int i=1;i<20;i++)
+    {
+        if (i <= 10)
+        {
+            sizes[i] = (i)*50;
+        }
+        else
+        {
+            sizes[i] = (i-10)*1000;
+        }
+    }
+
+    ofstream execution_time("execution_time.txt");
+    execution_time << "nneurons excite input normalize" << endl;
+
+    double time_excite,time_input, time_normalize;
+    for(int i=0;i<20;i++)
+    {
+        cout << "Testando tempo de execução com numero de neuronios = " << sizes[i] << endl;
+        network = new HDCellsNetwork(sizes[i]);
+
+        network->initWeights(angles::from_degrees(10),MEXICAN_HAT);
+
+        time_excite = time_input = time_normalize = 0;
+        for(int j=0;j<100;j++)
+        {
+            time_monitor.start();
+            network->excite();
+            time_monitor.finish();
+            time_excite += time_monitor.getDuration();
+
+            time_monitor.start();
+            network->applyExternalInput(0,angles::from_degrees(10));
+            time_monitor.finish();
+            time_input += time_monitor.getDuration();
+
+            time_monitor.start();
+            network->normalizeNeurons();
+            time_monitor.finish();
+            time_normalize += time_monitor.getDuration();
+
+        }
+        execution_time << sizes[i] << " " << time_excite/100 << " " << time_input/100 << " " << time_normalize/100 << endl;
+
+        delete network;
+    }
+
+    execution_time.close();
+}
+
+
+
 
 int main(int argc, char **argv)
 {
@@ -221,11 +279,14 @@ int main(int argc, char **argv)
     network.getActivity(activity);
     snapshot << ros::Time::now() << " ";
     BOOST_FOREACH(double act, activity)
-        snapshot << act << " ";
+            snapshot << act << " ";
     snapshot << endl;
 
+
     ros::spin();
+    //testa_execution_time();
 
     snapshot.close();
+
 
 }
