@@ -1,8 +1,12 @@
 #ifndef HDCELLS_NETWORK_H
 #define HDCELLS_NETWORK_H
 
-
+#include <ros/ros.h>
 #include <opencv/cv.h>
+#include <angles/angles.h>
+#include <sensor_msgs/Imu.h>
+#include <visualization_msgs/Marker.h>
+#include <fstream>
 
 namespace hd_cells
 {
@@ -18,6 +22,28 @@ enum ExcitationType
     MEXICAN_HAT
 };
 
+enum NormalizationType
+{
+    NONE,
+    TOTAL,
+    UTMOST
+};
+
+struct HDParameters
+{
+    int number_of_neurons_;
+    ExcitationType excitation_type_;
+    double std_dev_excitation_;
+    double std_dev_input_;
+    double time_between_updates_;
+    double step_;
+    bool use_global_inhibition;
+    double global_inhibition_;
+    NormalizationType normalization_type_;
+    std::string imu_topic_;
+    std::string activity_filename_;
+};
+
 /**
  * @brief Class to model a network of Head Direction Cells.
  *
@@ -27,10 +53,16 @@ class HDCellsNetwork
 public:
     /**
      * @brief Constructor
-     * @param number_of_neurons Number of neurons on the network
      */
-    HDCellsNetwork(int number_of_neurons);
+    HDCellsNetwork();
 
+    /**
+     * @brief Destructor
+     */
+    ~HDCellsNetwork();
+
+
+    bool loadParameters();
 
     /**
      * @brief Function to initialize the network recurrent weights.
@@ -39,7 +71,7 @@ public:
      * @param normalize Flag to indicate if the network will use normalized weights
      * @return Return true if the initialization goes well
      */
-    bool initWeights(double sigma, ExcitationType type, bool normalize = false);
+    bool initWeights();
 
     /**
      * @brief Function to perform network excitation
@@ -64,6 +96,13 @@ public:
      * @return Return true if the external input goes well
      */
     bool applyExternalInput(cv::Mat_<double> input);
+
+    /**
+     * @brief Update network.
+     * @todo Documentar os passos realizados nessa função
+     * @param input_angle Angle of external input
+     */
+    void update(double input_angle);
 
     /**
      * @brief Interface to compute the external input with on angle and a stardard deviation.
@@ -92,16 +131,6 @@ public:
      * @return Return true if the path integration goes well.
      */
     bool pathIntegrate(double delta_angle);
-
-    /**
-     * @brief Set the global inhibition.
-     *
-     * This was not used in the best network configuration
-     *
-     * @param inhi The amount of global inhibition has to be applied on each neuron
-     * @return Return true if the configuration goes well.
-     */
-    bool setGlobalInhibition(double inhi);
 
     /**
      * @brief Function to normalize the neurons.
@@ -136,14 +165,62 @@ public:
      */
     void getLastInput(std::vector<double> &input);
 
+    /**
+     * @brief ROS Timer Callback
+     * Function to be called every time a timer event occurs.
+     *
+     * @param event Information about time of the callback.
+     */
+    void timerCallback(const ros::TimerEvent& event);
+
+
+    /**
+     * @brief Configure the timer callback to update the network
+     * The time between updates will be configured using the parameter server.
+     */
+    void createTimer();
+
+    /**
+     * @brief Create ros subscribers
+     */
+    void createROSSubscribers();
+
+    /**
+     * @brief Create ros publishers
+     */
+    void createROSPublishers();
+
+    /**
+     * @brief ROS IMU Subscriber Calback
+     * @param message IMU messsage
+     */
+    void imuCallback(const sensor_msgs::ImuConstPtr &message);
+
+    void publishActivity();
+
+    void publishInput();
+
+    void storeNetworkActivity();
+
+
 private:
 
     cv::Mat_<double> neurons_; /**< Matrix to store the neuron's activity.  */
     cv::Mat_<double> last_input_; /**< Matrix to store the last input applyied on the network. */
     cv::Mat_<double> recurrent_weights; /**< Matrix to store the recurrent weights. */
-    int number_of_neurons_; /**< Number of neurons on the network. */
-    double step_; /**< Step angle between neurons.*/
-    double global_inhibition_; /**< Global inhibition. */
+
+    HDParameters parameters_;
+
+    std::ofstream activity_file_;
+
+    //! ROS related code
+    ros::NodeHandle node_handle_;
+    ros::Subscriber imu_subscriber_;
+    ros::Publisher marker_publisher_;
+    ros::Timer timer_;
+
+    //! Constants
+    const double MARKER_SCALE;
 };
 
 
