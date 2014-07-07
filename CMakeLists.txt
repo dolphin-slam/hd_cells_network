@@ -106,6 +106,11 @@ add_library(hd_cells_network
   src/${PROJECT_NAME}/hd_cells_network.cpp
 )
 
+target_link_libraries(hd_cells_network
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
+
 ## Declare a cpp executable
 add_executable(hd_cells_network_node src/hd_cells_network_node.cpp)
 
