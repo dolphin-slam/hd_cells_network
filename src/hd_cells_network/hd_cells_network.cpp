@@ -8,7 +8,10 @@ namespace hd_cells
 {
 
 
-
+/**
+ * @brief HDCellsNetwork::HDCellsNetwork
+ * @param number_of_neurons
+ */
 HDCellsNetwork::HDCellsNetwork(int number_of_neurons)   {
 
     number_of_neurons_ = number_of_neurons;
