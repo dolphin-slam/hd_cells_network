@@ -314,6 +314,10 @@ void HDCellsNetwork::timerCallback(const ros::TimerEvent &event)
 
     update(angles::from_degrees(100));
 
+    publishActivity();
+
+    publishInput();
+
 }
 
 void HDCellsNetwork::createTimer()
@@ -339,6 +343,10 @@ void HDCellsNetwork::imuCallback(const sensor_msgs::ImuConstPtr &message)
     double yaw = tf::getYaw(message->orientation);
 
     update(yaw);
+
+    publishActivity();
+
+    publishInput();
 
 }
 

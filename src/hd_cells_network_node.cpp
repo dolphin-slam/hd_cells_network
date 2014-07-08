@@ -13,20 +13,7 @@
 
 #include <opencv/cv.h>
 
-
-using std::cout;
-using std::endl;
-using std::ofstream;
-
 using namespace hd_cells;
-
-const double MARKER_SCALE = 0.1;
-const int NUMBER_OF_NEURONS = 100;
-const double STD_IMU = angles::from_degrees(10);
-std::ofstream snapshot;
-cv::RNG rng(0xFFFFFFFF);
-
-
 
 
 ros::Publisher marker_publisher;
@@ -111,8 +98,6 @@ int main(int argc, char **argv)
     ros::spin();
 
     //testa_execution_time();
-
-    snapshot.close();
 
 
 }
