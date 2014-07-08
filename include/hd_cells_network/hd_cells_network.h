@@ -33,11 +33,12 @@ struct HDParameters
 {
     int number_of_neurons_;
     ExcitationType excitation_type_;
+    bool use_normalized_weigths_;
     double std_dev_excitation_;
     double std_dev_input_;
     double time_between_updates_;
     double step_;
-    bool use_global_inhibition;
+    bool use_global_inhibition_;
     double global_inhibition_;
     NormalizationType normalization_type_;
     std::string imu_topic_;
@@ -200,7 +201,7 @@ public:
 
     void publishInput();
 
-    void storeNetworkActivity();
+    void storeNetwork();
 
 
 private:

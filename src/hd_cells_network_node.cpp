@@ -86,9 +86,6 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "hd_cells_network");
 
-
-    //! ROS Node Handle
-
     HDCellsNetwork network;
 
     network.createROSPublishers();

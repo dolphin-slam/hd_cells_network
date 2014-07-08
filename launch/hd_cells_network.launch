@@ -1,6 +1,8 @@
 <launch>
 
-    <node name="network" pkg="hd_cells_network" type="hd_cells_network_node" required="true"/>
+    <node name="network" pkg="hd_cells_network" type="hd_cells_network_node" required="true">
+        <rosparam command="load" file="$(find hd_cells_network)/config/config.yaml" />
+    </node>
 
     <!-- Visualization tools -->
 

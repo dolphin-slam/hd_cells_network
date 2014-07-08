@@ -36,8 +36,6 @@ bool HDCellsNetwork::loadParameters()
 {
     ros::NodeHandle private_nh_("~");
     std::string type;
-    double std_dev;
-
 
     //! int number_of_neurons_;
     private_nh_.param<int>("number_of_neurons",parameters_.number_of_neurons_,100);
@@ -49,57 +47,56 @@ bool HDCellsNetwork::loadParameters()
     private_nh_.param<std::string>("excitation_type",type,"MEXICAN_HAT");
     if(type == "MEXICAN_HAT")
     {
-        parameters_.excitation_type_ == MEXICAN_HAT;
+        parameters_.excitation_type_ = MEXICAN_HAT;
     }
     else if (type == "GAUSSIAN")
     {
-        parameters_.excitation_type_ == GAUSSIAN;
+        parameters_.excitation_type_ = GAUSSIAN;
     }
     else
     {
         ROS_WARN("Invalid excitation type. Using default -> MEXICAN_HAT");
-        parameters_.excitation_type_ == MEXICAN_HAT;
+        parameters_.excitation_type_ = MEXICAN_HAT;
     }
 
-    //! double std_dev_excitation_;
-    private_nh_.param<double>("std_dev_excitation_degrees",std_dev,10.0);
-    parameters_.std_dev_excitation_ = angles::from_degrees(std_dev);
+    //! bool use_normalized_weigths_;
+    private_nh_.param<bool>("use_normalized_weigths",parameters_.use_normalized_weigths_,true);
 
+    //! double std_dev_excitation_;
+    private_nh_.param<double>("std_dev_excitation",parameters_.std_dev_excitation_,angles::from_degrees(10.0));
 
     //! double std_dev_input_;
-    private_nh_.param<double>("std_dev_input_degrees",std_dev,10.0);
-    parameters_.std_dev_input_ = angles::from_degrees(std_dev);
-
+    private_nh_.param<double>("std_dev_input",parameters_.std_dev_input_,angles::from_degrees(10.0));
 
     //! double time_between_updates_;
     private_nh_.param<double>("time_between_updates",parameters_.time_between_updates_,1.0);
 
 
     //! bool use_global_inhibition;
-    private_nh_.param<bool>("use_global_inhibition",parameters_.use_global_inhibition,1.0);
+    private_nh_.param<bool>("use_global_inhibition",parameters_.use_global_inhibition_,true);
 
 
     //! double global_inhibition_;
-    private_nh_.param<double>("global_inhibition",parameters_.global_inhibition_,1.0);
+    private_nh_.param<double>("global_inhibition",parameters_.global_inhibition_,0.25);
 
     //! NormalizationType normalization_type;
     private_nh_.param<std::string>("normalization_type",type,"NONE");
     if(type == "NONE")
     {
-        parameters_.normalization_type_ == NONE;
+        parameters_.normalization_type_ = NONE;
     }
     else if (type == "TOTAL")
     {
-        parameters_.normalization_type_ == TOTAL;
+        parameters_.normalization_type_ = TOTAL;
     }
     else if (type == "UTMOST")
     {
-        parameters_.normalization_type_ == UTMOST;
+        parameters_.normalization_type_ = UTMOST;
     }
     else
     {
         ROS_WARN("Invalid normalization type. Using default -> NONE");
-        parameters_.normalization_type_ == NONE;
+        parameters_.normalization_type_ = NONE;
     }
 
     //! std::string imu_topic_
@@ -150,7 +147,7 @@ bool HDCellsNetwork::initWeights()
 {
     std::ofstream out("recurrent_weights.txt");
 
-    double distance;
+    double distance,variation;
 
     recurrent_weights.create(parameters_.number_of_neurons_,parameters_.number_of_neurons_);
 
@@ -161,11 +158,12 @@ bool HDCellsNetwork::initWeights()
             for(int j=i;j<parameters_.number_of_neurons_;j++)
             {
                 distance = angles::shortest_angular_distance(i*parameters_.step_,j*parameters_.step_);
-                recurrent_weights[i][j] = recurrent_weights[j][i] = exp( -pow(distance,2)/( 2*pow(parameters_.std_dev_excitation_,2) ) );
+                variation = pow(parameters_.std_dev_excitation_,2);
+                recurrent_weights[i][j] = recurrent_weights[j][i] = exp( -pow(distance,2)/( 2*variation ) );
             }
         }
 
-        if(parameters_.normalization_type_ != NONE)
+        if(parameters_.use_normalized_weigths_)
         {
             recurrent_weights /= ( 1 / ( parameters_.std_dev_excitation_*sqrt(2*M_PI) ) );
         }
@@ -177,14 +175,19 @@ bool HDCellsNetwork::initWeights()
             for(int j=i;j<parameters_.number_of_neurons_;j++)
             {
                 distance = angles::shortest_angular_distance(i*parameters_.step_,j*parameters_.step_);
-                recurrent_weights[i][j] = recurrent_weights[j][i] = ( 1 - pow(distance,2)/pow(parameters_.std_dev_excitation_,2) )*exp( -pow(distance,2)/( 2*pow(parameters_.std_dev_excitation_,2) ) );
+                variation = pow(parameters_.std_dev_excitation_,2);
+                recurrent_weights[i][j] = recurrent_weights[j][i] = ( 1 - pow(distance,2)/variation )*exp( -pow(distance,2)/(2*variation) );
             }
         }
 
-        if(parameters_.normalization_type_)
+        if(parameters_.use_normalized_weigths_)
         {
             recurrent_weights /= ( 2 / ( sqrt(3*parameters_.std_dev_excitation_*sqrt(M_PI)) ) );
         }
+    }
+    else
+    {
+        ROS_ERROR_STREAM("Invalid excitation type = " << parameters_.excitation_type_ );
     }
 
     for(int i=0;i<parameters_.number_of_neurons_;i++)
@@ -247,16 +250,21 @@ bool HDCellsNetwork::pathIntegrate(double delta_angle)
 
 bool HDCellsNetwork::normalizeNeurons()
 {
+    double max =0, total =0;
 
-    //    double total = 0;
-    //    BOOST_FOREACH(double neuron,neurons_)
-    //    {
-    //        total += neuron;
-    //    }
-    //    neurons_ /= total;
-
-    double max = *std::max_element(neurons_.begin(),neurons_.end());
-    neurons_ /= max;
+    if(parameters_.normalization_type_ == UTMOST)
+    {
+        max = *std::max_element(neurons_.begin(),neurons_.end());
+        neurons_ /= max;
+    }
+    else if(parameters_.normalization_type_ == TOTAL)
+    {
+        BOOST_FOREACH(double neuron,neurons_)
+        {
+            total += neuron;
+        }
+        neurons_ /= total;
+    }
 
 
 }
@@ -264,12 +272,7 @@ bool HDCellsNetwork::normalizeNeurons()
 bool HDCellsNetwork::normalizeTotalNeurons()
 {
 
-    double total = 0;
-    BOOST_FOREACH(double neuron,neurons_)
-    {
-        total += neuron;
-    }
-    neurons_ /= total;
+
 
     //    double max = *std::max_element(neurons_.begin(),neurons_.end());
     //    neurons_ /= max;
@@ -298,7 +301,7 @@ void HDCellsNetwork::update(double input_angle)
 
     applyExternalInput(input_angle);
 
-    if(parameters_.use_global_inhibition)
+    if(parameters_.use_global_inhibition_)
     {
         inhibit();
     }
@@ -334,7 +337,6 @@ void HDCellsNetwork::createROSSubscribers()
 void HDCellsNetwork::createROSPublishers()
 {
     marker_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("network",1);
-
 }
 
 
@@ -447,7 +449,7 @@ void HDCellsNetwork::publishInput()
     marker_publisher_.publish(message);
 }
 
-void HDCellsNetwork::storeNetworkActivity()
+void HDCellsNetwork::storeNetwork()
 {
     activity_file_ << ros::Time::now() << " ";
     BOOST_FOREACH(double act, neurons_)
