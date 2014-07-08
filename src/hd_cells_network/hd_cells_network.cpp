@@ -24,6 +24,8 @@ HDCellsNetwork::HDCellsNetwork() : MARKER_SCALE(0.1){
 
     activity_file_.open(parameters_.activity_filename_.c_str());
 
+    ROS_DEBUG_STREAM(parameters_);
+
 }
 
 HDCellsNetwork::~HDCellsNetwork()
@@ -455,6 +457,24 @@ void HDCellsNetwork::storeNetwork()
     BOOST_FOREACH(double act, neurons_)
             activity_file_<< act << " ";
     activity_file_ << std::endl;
+}
+
+std::ostream &operator<<(std::ostream &out, HDParameters &parameters)
+{
+    out << "Network Parameters" << std::endl;
+    out << "number_of_neurons: " << parameters.number_of_neurons_ << std::endl;
+    out << "step:= " << parameters.step_ << std::endl;
+    out << "excitation_type: " << parameters.excitation_type_ << std::endl;
+    out << "use_normalized_weigths: " << parameters.use_normalized_weigths_ << std::endl;
+    out << "std_dev_excitation: " << parameters.std_dev_excitation_ << std::endl;
+    out << "std_dev_input: " << parameters.std_dev_input_ << std::endl;
+    out << "time_between_updates: " << parameters.time_between_updates_ << std::endl;
+    out << "use_global_inhibition: " << parameters.use_global_inhibition_ << std::endl;
+    out << "global_inhibition: " << parameters.global_inhibition_ << std::endl;
+    out << "normalization_type: " << parameters.normalization_type_ << std::endl;
+    out << "imu_topic: " << parameters.imu_topic_ << std::endl;
+    out << "activity_filename: " << parameters.activity_filename_ << std::endl;
+    out << std::endl ;
 }
 
 }

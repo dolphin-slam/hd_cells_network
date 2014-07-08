@@ -7,6 +7,7 @@
 #include <sensor_msgs/Imu.h>
 #include <visualization_msgs/Marker.h>
 #include <fstream>
+#include <iostream>
 
 namespace hd_cells
 {
@@ -43,6 +44,8 @@ struct HDParameters
     NormalizationType normalization_type_;
     std::string imu_topic_;
     std::string activity_filename_;
+
+    friend std::ostream &operator<< (std::ostream &out, HDParameters &parameters);
 };
 
 /**
