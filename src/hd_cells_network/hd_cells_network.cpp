@@ -129,7 +129,7 @@ bool HDCellsNetwork::applyExternalInput(double angle)
 {
     cv::Mat_< double> input(neurons_.size());
 
-    std::fill(neurons_.begin(), neurons_.end(),0.0);
+    std::fill(input.begin(), input.end(),0.0);
 
     input[static_cast<int>(angle/parameters_.step_)][0] = 1.0;
 
@@ -140,6 +140,8 @@ bool HDCellsNetwork::applyExternalInput(double angle)
 
 bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
 {
+    ROS_DEBUG("Apply external input on network");
+
     last_input_ = input;
 
     neurons_ += input;
@@ -207,6 +209,8 @@ bool HDCellsNetwork::initWeights()
 
 bool HDCellsNetwork::excite()
 {
+    ROS_DEBUG("Network excitation");
+
     cv::Mat_<double> new_neurons(parameters_.number_of_neurons_,1);
     std::fill(new_neurons.begin(),new_neurons.end(),0.0);
 
@@ -219,16 +223,18 @@ bool HDCellsNetwork::excite()
         }
     }
 
-    //neurons_ = new_neurons;
-    for(int i=0;i<parameters_.number_of_neurons_;i++)
-    {
-        neurons_[i][0] = std::max(new_neurons[i][0] - neurons_[i][0],0.0);
-    }
+    neurons_ = new_neurons.clone();
+//    for(int i=0;i<parameters_.number_of_neurons_;i++)
+//    {
+//        neurons_[i][0] = std::max(new_neurons[i][0] - neurons_[i][0],0.0);
+//    }
 
 }
 
 bool HDCellsNetwork::inhibit()
 {
+
+    ROS_DEBUG("Network inhibition");
 
     BOOST_FOREACH(double &neuron, neurons_)
     {
