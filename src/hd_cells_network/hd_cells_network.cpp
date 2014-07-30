@@ -223,11 +223,11 @@ bool HDCellsNetwork::excite()
         }
     }
 
-    neurons_ = new_neurons.clone();
-//    for(int i=0;i<parameters_.number_of_neurons_;i++)
-//    {
-//        neurons_[i][0] = std::max(new_neurons[i][0] - neurons_[i][0],0.0);
-//    }
+//    neurons_ = new_neurons.clone();
+    for(int i=0;i<parameters_.number_of_neurons_;i++)
+    {
+        neurons_[i][0] = std::max(new_neurons[i][0] - neurons_[i][0],0.0);
+    }
 
 }
 
@@ -277,18 +277,6 @@ bool HDCellsNetwork::normalizeNeurons()
 
 }
 
-bool HDCellsNetwork::normalizeTotalNeurons()
-{
-
-
-
-    //    double max = *std::max_element(neurons_.begin(),neurons_.end());
-    //    neurons_ /= max;
-
-
-}
-
-
 
 
 void HDCellsNetwork::getActivity(std::vector<double> &act)
@@ -305,25 +293,40 @@ void HDCellsNetwork::getLastInput(std::vector<double> &input)
 
 void HDCellsNetwork::update(double input_angle)
 {
+
     excite();
 
+    std::cout << "Activity1 " << format(neurons_.t() ,"csv") << std::endl;
+
     applyExternalInput(input_angle);
+
+    std::cout << "Activity2 " << format(neurons_.t() ,"csv") << std::endl;
 
     if(parameters_.use_global_inhibition_)
     {
         inhibit();
+        std::cout << "Activity3 " << format(neurons_.t() ,"csv") << std::endl;
     }
 
     if(parameters_.normalization_type_ != NONE)
     {
         normalizeNeurons();
+        std::cout << "Activity4 " << format(neurons_.t() ,"csv") << std::endl;
     }
 }
 
 void HDCellsNetwork::timerCallback(const ros::TimerEvent &event)
 {
 
-    update(angles::from_degrees(100));
+    static ros::Time first_time = event.current_real;
+    double ellapsed_time = (event.current_real - first_time).toSec();
+
+//    if (ellapsed_time < 30)
+//    {
+        update(angles::from_degrees(36));
+//    }
+
+
 
     publishActivity();
 

@@ -1,7 +1,7 @@
 number_of_neurons: 100
-excitation_type: 'MEXICAN_HAT'
+excitation_type: 'GAUSSIAN'
 use_normalized_weigths: false
-std_dev_excitation: deg(10)
+std_dev_excitation: deg(5)
 std_dev_input: deg(10)
 time_between_updates: 1.0
 use_global_inhibition: false
