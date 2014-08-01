@@ -1,4 +1,3 @@
-number_of_neurons: 100
 excitation_type: 'MEXICAN_HAT'
 use_normalized_weigths: false
 std_dev_excitation_multiplier: deg(5)
@@ -11,6 +10,6 @@ imu_topic: 'imu'
 activity_filename: 'network_activity.txt'
 starting_layer: 4
 iterations_to_split: 10
-iterations_to_merge: 10
+iterations_to_merge: 30
 max_number_of_neurons: 128
 min_number_of_neurons: 16

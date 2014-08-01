@@ -79,10 +79,8 @@ bool HDCellsNetwork::loadParameters()
     //! double time_between_updates_;
     private_nh_.param<double>("time_between_updates",parameters_.time_between_updates_,1.0);
 
-
     //! bool use_global_inhibition;
     private_nh_.param<bool>("use_global_inhibition",parameters_.use_global_inhibition_,true);
-
 
     //! double global_inhibition_;
     private_nh_.param<double>("global_inhibition",parameters_.global_inhibition_,0.25);
@@ -134,6 +132,18 @@ bool HDCellsNetwork::loadParameters()
     now_parameters_.step_ = (2*M_PI)/now_parameters_.now_number_of_neurons_;
 }
 
+double HDCellsNetwork::variation()
+{
+    return pow(StdDevExcitation(),2);
+}
+
+double HDCellsNetwork::distance(int i, int j)
+{
+
+    return angles::shortest_angular_distance(i*now_parameters_.step_,j*now_parameters_.step_);
+}
+
+
 bool HDCellsNetwork::applyExternalInput(double angle, double std_dev)
 {
     cv::Mat_< double> input(neurons_.size());
@@ -160,7 +170,6 @@ bool HDCellsNetwork::applyExternalInput(double angle)
 }
 
 
-
 bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
 {
     ROS_DEBUG("Apply external input on network");
@@ -170,16 +179,7 @@ bool HDCellsNetwork::applyExternalInput(cv::Mat_<double> input)
     neurons_ += input;
 }
 
-double HDCellsNetwork::variation()
-{
-    return pow(StdDevExcitation(),2);
-}
 
-double HDCellsNetwork::distance(int i, int j)
-{
-
-    return angles::shortest_angular_distance(i*now_parameters_.step_,j*now_parameters_.step_);
-}
 
 bool HDCellsNetwork::initWeights()
 {
@@ -253,7 +253,6 @@ bool HDCellsNetwork::excite()
         }
     }
 
-//    neurons_ = new_neurons.clone();
     for(int i=0;i<now_parameters_.now_number_of_neurons_;i++)
     {
         neurons_[i][0] = std::max(new_neurons[i][0] - neurons_[i][0],0.0);
@@ -309,7 +308,13 @@ bool HDCellsNetwork::normalizeNeurons()
 
 //void HDCellsNetwork::merge(double input_angle)
 //{
-//    if(now_parameters_.now_number_of_neurons_ > parameters_.min_number_of_neurons_)     //! \todo
+//    //Neurons around the input
+//    int neuron_ceil, neuron_floor;
+//    int find_limits = input_angle/angles::to_degrees(now_parameters_.step_);
+//    neuron_ceil = ceil(find_limits);
+//    neuron_floor = floor(find_limits);
+
+//    if(neuron_ceil - input_angle < 2*now_parameters_.step_/3    &&  input_angle - neuron_floor > now_parameters_.step_/3    &&  now_parameters_.now_iterations_to_merge_ > parameters_.min_number_of_neurons_)     //! \todo
 //    {
 //        now_parameters_.now_iterations_to_merge_++;
 //        if(now_parameters_.now_iterations_to_merge_ >= parameters_.iterations_to_merge_)
@@ -328,7 +333,7 @@ bool HDCellsNetwork::normalizeNeurons()
 //    int aux_number_of_neurons;
 
 //    aux_number_of_neurons = now_parameters_.now_number_of_neurons_;
-//    now_parameters_.now_number_of_neurons_ *= 2;
+//    now_parameters_.now_number_of_neurons_ /= 2;
 //    now_parameters_.step_ = 2*M_PI/now_parameters_.now_number_of_neurons_;
 //    neurons_.resize(now_parameters_.now_number_of_neurons_);
 
@@ -336,7 +341,21 @@ bool HDCellsNetwork::normalizeNeurons()
 
 //    initWeights();
 
-//    //! \todo
+//    for (int i=0;i<now_parameters_.now_number_of_neurons_;i++)
+//    {
+//        new_neurons_[i/2][0] = aux_neurons_[i][0];
+//        if (i == now_parameters_.now_number_of_neurons_-1)
+//        {
+//            new_neurons_[(i/2)+1][0] = (aux_neurons_[i][0] + aux_neurons_[0][0])/2.0;
+//        }
+//        else
+//        {
+//            new_neurons_[(i/2)+1][0] = (aux_neurons_[i][0] + aux_neurons_[i+1][0])/2.0;
+//        }
+
+//    }
+
+//    neurons_ = new_neurons_.clone();
 
 //}
 
