@@ -32,20 +32,36 @@ enum NormalizationType
 
 struct HDParameters
 {
-    int number_of_neurons_;
     ExcitationType excitation_type_;
     bool use_normalized_weigths_;
-    double std_dev_excitation_;
+    double std_dev_excitation_multiplier_;
     double std_dev_input_;
     double time_between_updates_;
-    double step_;
     bool use_global_inhibition_;
     double global_inhibition_;
     NormalizationType normalization_type_;
     std::string imu_topic_;
     std::string activity_filename_;
+    int starting_layer_;
+    int iterations_to_split_;
+    int iterations_to_merge_;
+    int max_number_of_neurons_;
+    int min_number_of_neurons_;
+
 
     friend std::ostream &operator<< (std::ostream &out, HDParameters &parameters);
+};
+
+struct HDNow
+{
+    int actual_layer_;
+    double step_;
+    int now_number_of_neurons_;
+    int splitted_;  //Number of splits done
+    int merged_;    //Number of merges done
+    int now_iterations_to_split_;   //The number of iterations to split in the order of 2^n
+    int now_iterations_to_merge_;
+
 };
 
 /**
@@ -206,6 +222,28 @@ public:
 
     void storeNetwork();
 
+    /**
+      * @brief Duplicates the number of neurons in the order of 2^n in need of extra precision
+      * @param input_angle
+      */
+    void split(double input_angle);
+
+    void split();
+
+    void merge(double input_angle);
+
+    void merge();
+
+
+    /**
+      * @brief Calculates the actual standard deviation in the excitation phase
+      */
+    double StdDevExcitation();
+
+    double distance(int i, int j);
+
+    double variation();
+
 
 private:
 
@@ -214,6 +252,7 @@ private:
     cv::Mat_<double> recurrent_weights; /**< Matrix to store the recurrent weights. */
 
     HDParameters parameters_;
+    HDNow now_parameters_;
 
     std::ofstream activity_file_;
 
